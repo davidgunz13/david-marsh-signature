@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 BASE = "https://davidgunz13.github.io/david-marsh-signature/assets"
-VERSION = "2"
+VERSION = "3"
 
 NAVY = "#0b2038"
 GOLD = "#b8862b"       # text gold (a touch darker than the art for contrast)
