@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 BASE = "https://davidgunz13.github.io/david-marsh-signature/assets"
-VERSION = "1"
+VERSION = "2"
 
 NAVY = "#0b2038"
 GOLD = "#b8862b"       # text gold (a touch darker than the art for contrast)
@@ -135,7 +135,13 @@ INDEX = f"""<!DOCTYPE html>
 const sig = document.getElementById('sig');
 const status = document.getElementById('status');
 document.getElementById('copy').addEventListener('click', async () => {{
-  const html = sig.innerHTML.trim();
+  // Copy the untouched source file, not the live page: browser extensions
+  // (click-to-call, etc.) can rewrite links on screen.
+  let html = sig.innerHTML.trim();
+  try {{
+    const src = await fetch('outlook-signature.html', {{cache: 'no-store'}}).then(r => r.text());
+    html = src.split('<!-- signature start -->')[1].split('<!-- signature end -->')[0].trim();
+  }} catch (e) {{}}
   try {{
     await navigator.clipboard.write([new ClipboardItem({{
       'text/html': new Blob([html], {{type: 'text/html'}}),

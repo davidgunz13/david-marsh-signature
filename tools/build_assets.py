@@ -278,6 +278,10 @@ def handwriting():
         pal = Image.new("RGB", (size[0], size[1] * 2))
         pal.paste(frames[-1], (0, 0)); pal.paste(frames[len(frames) // 2], (0, size[1]))
         pal = pal.quantize(colors=96, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+        pv = pal.getpalette()[:96 * 3]
+        wi = max(range(96), key=lambda i: sum(pv[3 * i:3 * i + 3]))
+        pv[3 * wi:3 * wi + 3] = [255, 255, 255]           # background must be pure white
+        pal.putpalette(pv)
         q = [f.quantize(palette=pal, dither=Image.Dither.NONE) for f in frames]
         durs = [int(1000 / FPS)] * (len(q) - 1) + [60000]
         durs[0] = 300                                      # hold the first frame briefly
