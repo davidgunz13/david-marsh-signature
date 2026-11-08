@@ -278,11 +278,17 @@ def handwriting():
         pal = Image.new("RGB", (size[0], size[1] * 2))
         pal.paste(frames[-1], (0, 0)); pal.paste(frames[len(frames) // 2], (0, size[1]))
         pal = pal.quantize(colors=96, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
-        pv = pal.getpalette()[:96 * 3]
-        wi = max(range(96), key=lambda i: sum(pv[3 * i:3 * i + 3]))
-        pv[3 * wi:3 * wi + 3] = [255, 255, 255]           # background must be pure white
-        pal.putpalette(pv)
-        q = [f.quantize(palette=pal, dither=Image.Dither.NONE) for f in frames]
+        pv = pal.getpalette()
+        cols = np.array(pv[:len(pv) // 3 * 3], float).reshape(-1, 3)[:96]
+        cols[np.argmax(cols.sum(1))] = 255                # background must be pure white
+        tree = cKDTree(cols)
+        flat = [int(v) for v in cols.astype(np.uint8).ravel()]
+        q = []
+        for f in frames:
+            idx = tree.query(np.asarray(f, float).reshape(-1, 3))[1].astype(np.uint8)
+            pim = Image.fromarray(idx.reshape(size[1], size[0]), "P")
+            pim.putpalette(flat)
+            q.append(pim)
         durs = [int(1000 / FPS)] * (len(q) - 1) + [60000]
         durs[0] = 300                                      # hold the first frame briefly
         q[0].save(OUT / name, save_all=True, append_images=q[1:], duration=durs,
